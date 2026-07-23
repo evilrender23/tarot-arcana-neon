@@ -1,22 +1,36 @@
 /**
  * app.js - Tarot Arcana Neón (Sí o No) para Rabbit R1
- * Ofrece tiradas de tarot estilo Pixel Neón 16-Bit con 6 tipos de cartas únicas,
- * lectura en voz alta (Speech Synthesis), voz nativa r1, animaciones 3D y racha.
+ * Baraja completa de los 22 Arcanos Mayores del Tarot en Pixel-Art 16-Bit.
+ * Incluye lectura en voz alta (TTS), voz nativa r1, animaciones 3D y racha.
  */
 
 (function() {
   'use strict';
 
-  // Baraja Extendida de Cartas Tarot Arcana (Sí / No)
+  // Baraja Completa de los 22 Arcanos Mayores (0 al XXI)
   const CARDS = [
-    { type: 'YES', name: 'EL SOL', image: 'card_yes.jpg', speech: '¡SÍ! El Sol ilumina tu camino con éxito.' },
-    { type: 'YES', name: 'EL MAGO', image: 'card_mago.jpg', speech: '¡SÍ! El Mago manifiesta tu deseo con poder.' },
-    { type: 'YES', name: 'LA ESTRELLA', image: 'card_estrella.jpg', speech: '¡SÍ! La Estrella ilumina tu esperanza.' },
-    { type: 'YES', name: 'LA FORTUNA', image: 'card_yes.jpg', speech: '¡SÍ! La Rueda de la Fortuna sonríe a tu favor.' },
-    { type: 'NO', name: 'LA LUNA', image: 'card_no.jpg', speech: '¡NO! La Luna sugiere precaución y misterio.' },
-    { type: 'NO', name: 'LA TORRE', image: 'card_torre.jpg', speech: '¡NO! La Torre indica cambios repentinos.' },
-    { type: 'NO', name: 'EL JUICIO', image: 'card_juicio.jpg', speech: '¡NO! El Juicio pide analizar antes de actuar.' },
-    { type: 'NO', name: 'LA SOMBRA', image: 'card_no.jpg', speech: '¡NO! Las sombras ocultan la verdad por ahora.' }
+    { id: 0, type: 'YES', name: '0. EL LOCO', image: 'card_loco.jpg', speech: '¡SÍ! El Loco anuncia nuevos comienzos y aventura sin miedo.' },
+    { id: 1, type: 'YES', name: 'I. EL MAGO', image: 'card_mago.jpg', speech: '¡SÍ! El Mago manifiesta tu deseo con todo tu poder.' },
+    { id: 2, type: 'YES', name: 'II. SACERDOTISA', image: 'card_estrella.jpg', speech: '¡SÍ! La Sacerdotisa pide confiar en tu intuición.' },
+    { id: 3, type: 'YES', name: 'III. EMPERATRIZ', image: 'card_yes.jpg', speech: '¡SÍ! La Emperatriz trae abundancia y florecimiento.' },
+    { id: 4, type: 'YES', name: 'IV. EMPERADOR', image: 'card_mago.jpg', speech: '¡SÍ! El Emperador afirma estructura, control y éxito.' },
+    { id: 5, type: 'YES', name: 'V. EL PAPA', image: 'card_estrella.jpg', speech: '¡SÍ! El Sumo Sacerdote bendice tu camino.' },
+    { id: 6, type: 'YES', name: 'VI. ENAMORADOS', image: 'card_yes.jpg', speech: '¡SÍ! Los Enamorados auguran armonía y elecciones sabias.' },
+    { id: 7, type: 'YES', name: 'VII. EL CARRO', image: 'card_mago.jpg', speech: '¡SÍ! El Carro impulsa tu victoria con determinación.' },
+    { id: 8, type: 'YES', name: 'VIII. LA FUERZA', image: 'card_yes.jpg', speech: '¡SÍ! La Fuerza demuestra tu valor interior.' },
+    { id: 9, type: 'NO', name: 'IX. ERMITAÑO', image: 'card_no.jpg', speech: '¡NO! El Ermitaño sugiere introspección antes de actuar.' },
+    { id: 10, type: 'YES', name: 'X. LA RUEDA', image: 'card_yes.jpg', speech: '¡SÍ! La Rueda de la Fortuna gira a tu favor.' },
+    { id: 11, type: 'YES', name: 'XI. LA JUSTICIA', image: 'card_juicio.jpg', speech: '¡SÍ! La Justicia equilibra la verdad y la equidad.' },
+    { id: 12, type: 'NO', name: 'XII. EL COLGADO', image: 'card_torre.jpg', speech: '¡NO! El Colgado pide pausar y ver otro ángulo.' },
+    { id: 13, type: 'NO', name: 'XIII. LA MUERTE', image: 'card_muerte.jpg', speech: '¡NO! La Muerte marca el fin de un ciclo para transformar.' },
+    { id: 14, type: 'YES', name: 'XIV. TEMPLANZA', image: 'card_estrella.jpg', speech: '¡SÍ! La Templanza trae equilibrio y armonía.' },
+    { id: 15, type: 'NO', name: 'XV. EL DIABLO', image: 'card_no.jpg', speech: '¡NO! El Diablo advierte contra ataduras e impulsos.' },
+    { id: 16, type: 'NO', name: 'XVI. LA TORRE', image: 'card_torre.jpg', speech: '¡NO! La Torre indica cambios y revelaciones repentinas.' },
+    { id: 17, type: 'YES', name: 'XVII. ESTRELLA', image: 'card_estrella.jpg', speech: '¡SÍ! La Estrella concede tu mayor esperanza.' },
+    { id: 18, type: 'NO', name: 'XVIII. LA LUNA', image: 'card_no.jpg', speech: '¡NO! La Luna sugiere misterios y cautela.' },
+    { id: 19, type: 'YES', name: 'XIX. EL SOL', image: 'card_yes.jpg', speech: '¡SÍ! El Sol ilumina tu camino con alegría y plenitud.' },
+    { id: 20, type: 'NO', name: 'XX. EL JUICIO', image: 'card_juicio.jpg', speech: '¡NO! El Juicio pide evaluar las consecuencias.' },
+    { id: 21, type: 'YES', name: 'XXI. EL MUNDO', image: 'card_mundo.jpg', speech: '¡SÍ! El Mundo celebra tu realización total y triunfo.' }
   ];
 
   // Estado de la App
@@ -75,7 +89,7 @@
     }
 
     // -------------------------------------------------------------
-    // Tirada de Carta (Sí o No)
+    // Tirada de Carta (Sí o No de los 22 Arcanos)
     // -------------------------------------------------------------
     function drawCard() {
       if (isShuffling) return;
@@ -92,14 +106,14 @@
       // Animación de Barajar
       isShuffling = true;
       tarotCard.classList.add('shuffling');
-      if (promptText) promptText.textContent = '🔮 Consultando el Oráculo Arcana...';
+      if (promptText) promptText.textContent = '🔮 Mezclando los 22 Arcanos Mayores...';
       playChimeSound();
 
       setTimeout(() => {
         tarotCard.classList.remove('shuffling');
         isShuffling = false;
 
-        // Seleccionar carta aleatoria
+        // Seleccionar carta aleatoria entre los 22 Arcanos
         const randomIndex = Math.floor(Math.random() * CARDS.length);
         currentCard = CARDS[randomIndex];
 
@@ -140,7 +154,7 @@
     // Lectura en Voz Alta (TTS & r1 Audio)
     // -------------------------------------------------------------
     function speakResult(card) {
-      const textToSpeak = `El Tarot Arcana dice: ${card.type}. ${card.speech}`;
+      const textToSpeak = `El Tarot Arcana dice: ${card.type}. ${card.name}. ${card.speech}`;
 
       try {
         if ('speechSynthesis' in window) {
@@ -156,7 +170,7 @@
       }
 
       R1Bridge.postMessage({
-        message: `[Tarot Arcana]: Tirada realizada. Resultado = ${card.type}. Carta = ${card.name}.`,
+        message: `[Tarot Arcana]: Arcano Mayor ${card.name} tirado. Resultado = ${card.type}.`,
         useLLM: false,
         wantsR1Response: true
       });
@@ -184,10 +198,10 @@
     // -------------------------------------------------------------
     function requestDeepOracle() {
       if (promptText) promptText.textContent = '🔮 Oráculo Arcana r1 interpretando...';
-      const cardContext = currentCard ? `${currentCard.type} (${currentCard.name})` : 'Tirada General';
+      const cardContext = currentCard ? `${currentCard.name} (${currentCard.type})` : 'Baraja de 22 Arcanos';
 
       R1Bridge.postMessage({
-        message: `[Tarot Arcana]: Dame una breve y mística lectura de tarot de Sí o No para la carta ${cardContext} en tono de oráculo misterioso.`,
+        message: `[Tarot Arcana]: Dame una breve y mística interpretación del Arcano Mayor ${cardContext} respondiendo a una duda de Sí o No en tono místico.`,
         useLLM: true,
         wantsR1Response: true
       });
@@ -220,14 +234,14 @@
       score += 10;
       updateStatsDisplay();
       playChimeSound();
-      if (promptText) promptText.textContent = 'Barajando mazo...';
+      if (promptText) promptText.textContent = 'Barajando los 22 Arcanos...';
     });
 
     R1Bridge.on('scrollDown', () => {
       score += 10;
       updateStatsDisplay();
       playChimeSound();
-      if (promptText) promptText.textContent = 'Barajando mazo...';
+      if (promptText) promptText.textContent = 'Barajando los 22 Arcanos...';
     });
 
     R1Bridge.on('sideClick', () => {
