@@ -1,0 +1,22 @@
+{
+  "name": "tarot-balatro",
+  "title": "Tarot Balatro",
+  "created_at": "2026-07-23T16:17:56.261241+00:00",
+  "updated_at": "2026-07-23T16:17:56.261241+00:00",
+  "status": "scaffolded",
+  "features": [
+    "llm",
+    "ptt",
+    "wheel",
+    "storage"
+  ],
+  "deploy": {
+    "provider": null,
+    "url": null,
+    "deployed_at": null
+  },
+  "qr": {
+    "generated": false,
+    "path": null
+  }
+}

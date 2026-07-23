@@ -1,0 +1,341 @@
+/* Estilos Balatro Retro Pixel Art para Rabbit R1 (240x282 px) */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #120914;
+  background: radial-gradient(circle at 50% 50%, #2a1130 0%, #0d040e 100%);
+  color: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace, sans-serif;
+  font-size: 11px;
+}
+
+/* Contenedor Principal r1 */
+.r1-container {
+  width: 100%;
+  height: 100vh;
+  max-width: 240px;
+  max-height: 282px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 5px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Efecto CRT Scanlines Balatro */
+.r1-container::before {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+  background-size: 100% 3px;
+  z-index: 100;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #ff0055;
+  padding-bottom: 3px;
+}
+
+.title-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.chip-icon {
+  font-size: 14px;
+}
+
+.header h1 {
+  font-size: 11px;
+  font-weight: 900;
+  color: #ffcc00;
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 6px rgba(255, 204, 0, 0.6);
+}
+
+.mult-badge {
+  background: linear-gradient(135deg, #ff0055 0%, #b3003b 100%);
+  color: #ffffff;
+  font-size: 8px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  box-shadow: 0 0 8px rgba(255, 0, 85, 0.6);
+}
+
+/* Stats Bar */
+.stats-bar {
+  display: flex;
+  gap: 4px;
+  margin-top: 3px;
+}
+
+.stat-pill {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: bold;
+}
+
+.stat-pill small {
+  font-size: 7px;
+  opacity: 0.8;
+}
+
+.stat-pill.red {
+  background: #2b0b14;
+  border: 1px solid #ff2a55;
+  color: #ff7799;
+}
+
+.stat-pill.blue {
+  background: #0b1a2b;
+  border: 1px solid #00aaff;
+  color: #77ccff;
+}
+
+/* Content & Card Stage */
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 3px;
+  position: relative;
+}
+
+.card-stage {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  perspective: 600px;
+}
+
+.tarot-card {
+  width: 130px;
+  height: 175px;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  cursor: pointer;
+}
+
+.tarot-card.face-down {
+  transform: rotateY(0deg);
+}
+
+.tarot-card.face-up {
+  transform: rotateY(180deg);
+}
+
+.tarot-card.shuffling {
+  animation: shuffleAnim 0.4s ease-in-out infinite alternate;
+}
+
+@keyframes shuffleAnim {
+  0% { transform: rotate(-5deg) scale(0.95); }
+  100% { transform: rotate(5deg) scale(1.05); }
+}
+
+.card-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.8);
+}
+
+/* Card Back */
+.card-back {
+  background: #1e092b;
+  border: 2px solid #ff0055;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle, #3d0c52 0%, #150221 100%);
+}
+
+.balatro-pattern {
+  position: absolute;
+  inset: 4px;
+  border: 1px dashed rgba(255, 0, 85, 0.5);
+  border-radius: 6px;
+}
+
+.card-center-seal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  z-index: 2;
+}
+
+.eye-symbol {
+  font-size: 28px;
+  filter: drop-shadow(0 0 8px #ff0055);
+}
+
+.card-center-seal small {
+  font-size: 7px;
+  color: #ffaa00;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+/* Card Front */
+.card-front {
+  transform: rotateY(180deg);
+  border: 2px solid #ffcc00;
+  background: #000;
+}
+
+.card-art {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.card-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(0deg, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 70%, transparent 100%);
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.result-badge {
+  font-size: 14px;
+  font-weight: 900;
+  padding: 1px 12px;
+  border-radius: 4px;
+  letter-spacing: 1px;
+  box-shadow: 0 0 10px currentColor;
+}
+
+.result-badge.yes {
+  background: #00e676;
+  color: #003311;
+  box-shadow: 0 0 12px #00e676;
+}
+
+.result-badge.no {
+  background: #ff1744;
+  color: #33000a;
+  box-shadow: 0 0 12px #ff1744;
+}
+
+.card-name {
+  font-size: 9px;
+  font-weight: 800;
+  color: #ffcc00;
+}
+
+/* Prompt Box */
+.prompt-box {
+  background: rgba(20, 10, 30, 0.9);
+  border: 1px solid rgba(255, 204, 0, 0.4);
+  border-radius: 6px;
+  padding: 4px 6px;
+  text-align: center;
+}
+
+.prompt-text {
+  font-size: 9px;
+  font-weight: 700;
+  color: #ffdd66;
+}
+
+/* LLM Box */
+.llm-box {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #1c082b;
+  border: 1px solid #ff0055;
+  border-radius: 8px;
+  padding: 6px;
+  font-size: 9px;
+  color: #ffd5e5;
+  max-height: 125px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.9);
+  z-index: 10;
+}
+
+.llm-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 0, 85, 0.4);
+  padding-bottom: 2px;
+  font-weight: 800;
+  color: #ff6699;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: #aaa;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+#llm-text {
+  overflow-y: auto;
+  max-height: 85px;
+  line-height: 1.3;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Footer */
+.footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  padding-top: 3px;
+  text-align: center;
+}
+
+.hint {
+  font-size: 8px;
+  color: #888;
+}

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=240, height=282, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Tarot Arcana Neón - Sí o No</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app" class="r1-container neon-theme">
+    <!-- Header -->
+    <header class="header">
+      <div class="title-group">
+        <span class="chip-icon">🃏</span>
+        <h1>TAROT ARCANA</h1>
+      </div>
+      <span class="badge mult-badge">NEÓN x3</span>
+    </header>
+
+    <!-- Main Card Area -->
+    <main class="content">
+      <!-- Stats Bar -->
+      <div class="stats-bar">
+        <div class="stat-pill red">
+          <small>PUNTOS</small>
+          <span id="score-val">0</span>
+        </div>
+        <div class="stat-pill blue">
+          <small>SÍ / NO</small>
+          <span id="ratio-val">0 / 0</span>
+        </div>
+      </div>
+
+      <!-- Tarot Card Stage -->
+      <div id="card-stage" class="card-stage">
+        <div id="tarot-card" class="tarot-card face-down">
+          <!-- Card Back -->
+          <div class="card-face card-back">
+            <div class="neon-pattern"></div>
+            <div class="card-center-seal">
+              <span class="eye-symbol">👁️</span>
+              <small>HAZ TU PREGUNTA</small>
+            </div>
+          </div>
+
+          <!-- Card Front -->
+          <div class="card-face card-front">
+            <img id="card-img" class="card-art" src="card_yes.jpg" alt="Carta de Tarot">
+            <div class="card-overlay">
+              <span id="result-badge" class="result-badge yes">SÍ</span>
+              <span id="card-name" class="card-name">EL SOL</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Prompt & Speech Box -->
+      <div class="prompt-box">
+        <span id="prompt-text" class="prompt-text">Pulsa PTT o Clic para Tirar</span>
+      </div>
+
+      <!-- LLM Interpretation Box -->
+      <div id="llm-box" class="llm-box hidden">
+        <div class="llm-header">
+          <span>🔮 Oráculo Arcana r1</span>
+          <button id="close-llm" class="close-btn">×</button>
+        </div>
+        <p id="llm-text"></p>
+      </div>
+    </main>
+
+    <!-- Footer Navigation Hint -->
+    <footer class="footer">
+      <span class="hint">▲▼ Rueda: Barajar • PTT: Tirar / IA</span>
+    </footer>
+  </div>
+
+  <script src="r1-bridge.js"></script>
+  <script src="r1-mock.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
