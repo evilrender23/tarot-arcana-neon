@@ -1,172 +1,150 @@
 /**
- * r1-bridge.js - Abstracción de Hardware y SDK para rabbit r1 Creations
- * Proporciona acceso seguro con detección de capacidades a PluginMessageHandler,
- * almacenamiento encriptado, sensores y eventos del dispositivo.
+ * r1-bridge.js - Puente de comunicación ultraseguro y resiliente para Rabbit R1.
+ * Maneja eventos de hardware, PluginMessageHandler y almacenamiento sin lanzar excepciones.
  */
 
-window.R1Bridge = (function() {
+(function() {
   'use strict';
 
-  const isR1Environment = typeof window.PluginMessageHandler !== 'undefined';
-
-  // 1. Mensajería con rabbitOS / LLM
-  function postMessage(options) {
-    if (typeof options === 'string') {
-      options = { message: options };
-    }
-    const payload = {
-      message: options.message || '',
-      useLLM: options.useLLM || false,
-      wantsR1Response: options.wantsR1Response || false,
-      wantsJournalEntry: options.wantsJournalEntry || false
-    };
-
-    if (options.data) {
-      payload.data = typeof options.data === 'object' ? JSON.stringify(options.data) : options.data;
-    }
-
-    if (isR1Environment && window.PluginMessageHandler && typeof window.PluginMessageHandler.postMessage === 'function') {
-      window.PluginMessageHandler.postMessage(JSON.stringify(payload));
-    } else {
-      console.log('[R1Bridge Mock PostMessage]:', payload);
-      if (window.R1Mock && typeof window.R1Mock.simulateResponse === 'function') {
-        window.R1Mock.simulateResponse(payload);
-      }
-    }
-  }
-
-  // 2. Cerrar WebView
-  function close() {
-    if (typeof window.closeWebView !== 'undefined' && typeof window.closeWebView.postMessage === 'function') {
-      window.closeWebView.postMessage("");
-    } else {
-      console.log('[R1Bridge Mock]: WebView close requested');
-    }
-  }
-
-  // 3. Almacenamiento Persistente (Base64)
-  async function _getStorageItem(type, key) {
+  function safeAtob(str) {
+    if (!str || typeof str !== 'string') return null;
     try {
-      if (window.creationStorage && window.creationStorage[type]) {
-        const raw = await window.creationStorage[type].getItem(key);
-        return raw ? atob(raw) : null;
-      }
+      return atob(str);
     } catch (e) {
-      console.error(`[R1Bridge Storage Error - ${type}]:`, e);
+      try {
+        return decodeURIComponent(escape(window.atob(str)));
+      } catch (e2) {
+        return str;
+      }
     }
-    // Fallback a localStorage
-    const local = localStorage.getItem(`r1_${type}_${key}`);
-    return local ? atob(local) : null;
   }
 
-  async function _setStorageItem(type, key, value) {
-    const encoded = btoa(value);
+  function safeBtoa(str) {
+    if (!str) return '';
     try {
-      if (window.creationStorage && window.creationStorage[type]) {
-        await window.creationStorage[type].setItem(key, encoded);
-        return;
-      }
+      return btoa(str);
     } catch (e) {
-      console.error(`[R1Bridge Storage Error - ${type}]:`, e);
+      try {
+        return window.btoa(unescape(encodeURIComponent(str)));
+      } catch (e2) {
+        return str;
+      }
     }
-    localStorage.setItem(`r1_${type}_${key}`, encoded);
   }
 
-  async function _removeStorageItem(type, key) {
-    try {
-      if (window.creationStorage && window.creationStorage[type]) {
-        await window.creationStorage[type].removeItem(key);
-        return;
-      }
-    } catch (e) {
-      console.error(`[R1Bridge Storage Error - ${type}]:`, e);
-    }
-    localStorage.removeItem(`r1_${type}_${key}`);
-  }
+  const R1Bridge = {
+    listeners: {},
+    messageCallback: null,
 
-  async function _clearStorage(type) {
-    try {
-      if (window.creationStorage && window.creationStorage[type]) {
-        await window.creationStorage[type].clear();
-        return;
+    // Registrar oyente de eventos de hardware r1
+    on: function(event, callback) {
+      if (typeof callback !== 'function') return;
+      if (!this.listeners[event]) {
+        this.listeners[event] = [];
       }
-    } catch (e) {
-      console.error(`[R1Bridge Storage Error - ${type}]:`, e);
-    }
-    Object.keys(localStorage)
-      .filter(k => k.startsWith(`r1_${type}_`))
-      .forEach(k => localStorage.removeItem(k));
-  }
-
-  const storage = {
-    plain: {
-      getItem: (key) => _getStorageItem('plain', key),
-      setItem: (key, val) => _setStorageItem('plain', key, val),
-      removeItem: (key) => _removeStorageItem('plain', key),
-      clear: () => _clearStorage('plain')
+      this.listeners[event].push(callback);
     },
-    secure: {
-      getItem: (key) => _getStorageItem('secure', key),
-      setItem: (key, val) => _setStorageItem('secure', key, val),
-      removeItem: (key) => _removeStorageItem('secure', key),
-      clear: () => _clearStorage('secure')
-    }
-  };
 
-  // 4. Acelerómetro
-  const accelerometer = {
-    isAvailable: async function() {
-      if (window.creationSensors && window.creationSensors.accelerometer) {
-        return await window.creationSensors.accelerometer.isAvailable();
-      }
-      return typeof window.DeviceMotionEvent !== 'undefined';
-    },
-    start: function(callback, options) {
-      if (window.creationSensors && window.creationSensors.accelerometer) {
-        window.creationSensors.accelerometer.start(callback, options || { frequency: 60 });
-      } else if (window.R1Mock && typeof window.R1Mock.startAccelerometer === 'function') {
-        window.R1Mock.startAccelerometer(callback, options);
+    // Emitir evento interno de hardware
+    emit: function(event, data) {
+      const callbacks = this.listeners[event];
+      if (callbacks && callbacks.length > 0) {
+        callbacks.forEach(cb => {
+          try {
+            cb(data);
+          } catch (e) {
+            console.error(`[r1-bridge] Error en handler para ${event}:`, e);
+          }
+        });
       }
     },
-    stop: function() {
-      if (window.creationSensors && window.creationSensors.accelerometer) {
-        window.creationSensors.accelerometer.stop();
-      } else if (window.R1Mock && typeof window.R1Mock.stopAccelerometer === 'function') {
-        window.R1Mock.stopAccelerometer();
-      }
-    }
-  };
 
-  // 5. Suscripción a eventos de hardware
-  function on(eventName, handler) {
-    window.addEventListener(eventName, handler);
-  }
-
-  function off(eventName, handler) {
-    window.removeEventListener(eventName, handler);
-  }
-
-  // 6. Configurar callback de mensajes entrantes del servidor/LLM
-  function onMessage(callback) {
-    const originalHandler = window.onPluginMessage;
-    window.onPluginMessage = function(data) {
-      if (typeof originalHandler === 'function') {
-        originalHandler(data);
-      }
+    // Registrar callback de mensajes devueltos por PluginMessageHandler
+    onMessage: function(callback) {
       if (typeof callback === 'function') {
-        callback(data);
+        this.messageCallback = callback;
       }
-    };
-  }
+    },
 
-  return {
-    isR1: isR1Environment,
-    postMessage,
-    close,
-    storage,
-    accelerometer,
-    on,
-    off,
-    onMessage
+    // Enviar mensaje hacia Rabbit OS
+    postMessage: function(msgObj) {
+      try {
+        const payload = typeof msgObj === 'string' ? msgObj : JSON.stringify(msgObj);
+        if (window.PluginMessageHandler && typeof window.PluginMessageHandler.postMessage === 'function') {
+          window.PluginMessageHandler.postMessage(payload);
+        } else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.PluginMessageHandler) {
+          window.webkit.messageHandlers.PluginMessageHandler.postMessage(payload);
+        } else {
+          console.log('[r1-bridge] (Simulador) postMessage:', payload);
+        }
+      } catch (e) {
+        console.warn('[r1-bridge] Error enviando postMessage:', e);
+      }
+    },
+
+    // Sistema de Almacenamiento seguro
+    storage: {
+      plain: {
+        getItem: function(key) {
+          return new Promise((resolve) => {
+            try {
+              if (window.creationStorage && typeof window.creationStorage.getItem === 'function') {
+                window.creationStorage.getItem(key, (val) => {
+                  resolve(safeAtob(val) || val);
+                });
+              } else {
+                const local = localStorage.getItem(key);
+                resolve(local);
+              }
+            } catch (e) {
+              console.warn('[r1-bridge] Error en getItem:', e);
+              resolve(null);
+            }
+          });
+        },
+
+        setItem: function(key, val) {
+          return new Promise((resolve) => {
+            try {
+              const strVal = typeof val === 'string' ? val : JSON.stringify(val);
+              if (window.creationStorage && typeof window.creationStorage.setItem === 'function') {
+                window.creationStorage.setItem(key, safeBtoa(strVal), () => {
+                  resolve(true);
+                });
+              } else {
+                localStorage.setItem(key, strVal);
+                resolve(true);
+              }
+            } catch (e) {
+              console.warn('[r1-bridge] Error en setItem:', e);
+              resolve(false);
+            }
+          });
+        }
+      }
+    }
   };
+
+  // Exponer globalmente
+  window.R1Bridge = R1Bridge;
+
+  // Escuchar mensajes entrantes del sistema operativo Rabbit OS
+  window.addEventListener('message', function(evt) {
+    if (!evt || !evt.data) return;
+    try {
+      let data = evt.data;
+      if (typeof data === 'string') {
+        try { data = JSON.parse(data); } catch (e) {}
+      }
+
+      if (data && data.type) {
+        R1Bridge.emit(data.type, data.payload || data);
+      } else if (R1Bridge.messageCallback) {
+        R1Bridge.messageCallback(data);
+      }
+    } catch (e) {
+      console.warn('[r1-bridge] Error procesando evento message:', e);
+    }
+  });
+
 })();
