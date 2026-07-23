@@ -1,7 +1,6 @@
 /**
  * app.js - Tarot Arcana Neón (Sí o No) para Rabbit R1
- * Captura activa de micrófono con webkitSpeechRecognition y eventos nativos de voz de Rabbit OS.
- * Muestra la pregunta hablada exacta del usuario en pantalla y envía la petición al LLM.
+ * Enlace directo de controles por hardware de 4 vías + Botones táctiles R1.
  */
 
 (function() {
@@ -44,9 +43,6 @@
   let speechRecognizer = null;
   let userSpokenQuery = '';
 
-  // -------------------------------------------------------------
-  // Inicialización del Reconocimiento de Voz por Micrófono
-  // -------------------------------------------------------------
   function initSpeechRecognition() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
@@ -71,11 +67,9 @@
         };
 
         speechRecognizer.onerror = function(e) {
-          console.warn('[Micrófono] Error de reconocimiento:', e);
+          console.warn('[Micrófono] Error:', e);
         };
-      } catch (e) {
-        console.warn('[Micrófono] No se pudo inicializar SpeechRecognition:', e);
-      }
+      } catch (e) {}
     }
   }
 
@@ -93,10 +87,15 @@
     const llmText = document.getElementById('llm-text');
     const closeLlmBtn = document.getElementById('close-llm');
 
+    // Botones de control directo
+    const btnShuffle = document.getElementById('btn-shuffle');
+    const btnDraw = document.getElementById('btn-draw');
+    const btnOracle = document.getElementById('btn-oracle');
+
     if (cardImg) {
       cardImg.onerror = function() {
         this.onerror = null;
-        this.src = 'card_yes.jpg';
+        this.src = 'card_0.jpg';
       };
     }
 
@@ -114,9 +113,7 @@
           score = parsed.score || 0;
           updateStatsDisplay();
         }
-      } catch (e) {
-        console.warn('Error cargando estado:', e);
-      }
+      } catch (e) {}
     }
 
     async function saveState() {
@@ -134,9 +131,6 @@
       if (ratioVal) ratioVal.textContent = `${yesCount} / ${noCount}`;
     }
 
-    // -------------------------------------------------------------
-    // Animación de Barajar Mazo
-    // -------------------------------------------------------------
     function triggerShuffleAnimation(callback, duration = 800) {
       if (isShuffling) return;
       isShuffling = true;
@@ -155,9 +149,6 @@
       }, duration);
     }
 
-    // -------------------------------------------------------------
-    // Tirada de Carta
-    // -------------------------------------------------------------
     function drawCard() {
       if (isShuffling) return;
 
@@ -201,9 +192,6 @@
       }, 700);
     }
 
-    // -------------------------------------------------------------
-    // Lectura en Voz Alta (TTS & r1 Speaker)
-    // -------------------------------------------------------------
     function speakResult(card) {
       const textToSpeak = `El Tarot Arcana dice: ${card.type}. ${card.name}. ${card.speech}`;
 
@@ -216,9 +204,7 @@
           utterance.pitch = 0.9;
           window.speechSynthesis.speak(utterance);
         }
-      } catch (e) {
-        console.warn('SpeechSynthesis no disponible:', e);
-      }
+      } catch (e) {}
 
       R1Bridge.postMessage({
         message: `[Tarot Arcana]: Arcano Mayor ${card.name} tirado. Resultado = ${card.type}.`,
@@ -247,18 +233,12 @@
       } catch (e) {}
     }
 
-    // -------------------------------------------------------------
-    // Captura de Micrófono & Consulta IA Directa al Mantener PTT
-    // -------------------------------------------------------------
     function onPTTHoldStart() {
       isListeningVoice = true;
       userSpokenQuery = '';
 
-      // Iniciar captura por micrófono HTML5 si está soportado
       if (speechRecognizer) {
-        try {
-          speechRecognizer.start();
-        } catch (e) {}
+        try { speechRecognizer.start(); } catch (e) {}
       }
 
       if (promptText) promptText.textContent = '🎙️ Escuchando tu pregunta... (Manten presionado)';
@@ -271,11 +251,8 @@
       if (!isListeningVoice) return;
       isListeningVoice = false;
 
-      // Detener captura por micrófono HTML5
       if (speechRecognizer) {
-        try {
-          speechRecognizer.stop();
-        } catch (e) {}
+        try { speechRecognizer.stop(); } catch (e) {}
       }
 
       setTimeout(() => {
@@ -286,7 +263,6 @@
         if (llmQuestionText) llmQuestionText.textContent = userSpokenQuery ? `"${userSpokenQuery}"` : 'Petición de voz';
         if (llmText) llmText.textContent = 'Procesando la pregunta en el Oráculo de Rabbit OS...';
 
-        // Enviar petición con la frase capturada del micrófono hacia Rabbit OS
         R1Bridge.postMessage({
           message: `[Tarot Arcana]: ${cardContext}. ${finalQuery}. Responde a su pregunta con precisión.`,
           useLLM: true,
@@ -295,11 +271,7 @@
       }, 300);
     }
 
-    // -------------------------------------------------------------
-    // Escuchar Eventos de Mensaje y Transcripción Nativa de Rabbit OS
-    // -------------------------------------------------------------
     R1Bridge.onMessage((data) => {
-      // Capturar transcripción hablada nativa enviada por Rabbit OS
       if (data && (data.type === 'speechResult' || data.transcript || data.text || data.spokenText)) {
         const spoken = data.transcript || data.text || data.speechResult || data.spokenText;
         if (spoken) {
@@ -310,7 +282,6 @@
         return;
       }
 
-      // Procesar respuesta del LLM
       let reply = '';
       if (data && data.data) {
         try {
@@ -336,7 +307,7 @@
     });
 
     // -------------------------------------------------------------
-    // Eventos de Hardware R1 (Rueda & Botón PTT)
+    // Enlace de Eventos de Hardware R1 y Botones en Pantalla
     // -------------------------------------------------------------
     R1Bridge.on('scrollUp', () => {
       score += 10;
@@ -361,6 +332,22 @@
     R1Bridge.on('longPressEnd', () => {
       onPTTHoldRelease();
     });
+
+    // Botones de control táctil directo
+    if (btnShuffle) btnShuffle.addEventListener('click', () => {
+      score += 10;
+      updateStatsDisplay();
+      triggerShuffleAnimation();
+    });
+
+    if (btnDraw) btnDraw.addEventListener('click', drawCard);
+
+    if (btnOracle) {
+      btnOracle.addEventListener('mousedown', onPTTHoldStart);
+      btnOracle.addEventListener('mouseup', onPTTHoldRelease);
+      btnOracle.addEventListener('touchstart', (e) => { e.preventDefault(); onPTTHoldStart(); });
+      btnOracle.addEventListener('touchend', (e) => { e.preventDefault(); onPTTHoldRelease(); });
+    }
 
     tarotCard.addEventListener('click', drawCard);
     if (closeLlmBtn) closeLlmBtn.addEventListener('click', () => {

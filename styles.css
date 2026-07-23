@@ -1,4 +1,4 @@
-/* Estilos Balatro Retro Pixel Art para Rabbit R1 - Animaciones & IA Persistente */
+/* Estilos Balatro Retro Pixel Art para Rabbit R1 - Enfoque & Controles Multicanal */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -19,6 +19,7 @@ html, body {
   color: #ffffff;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace, sans-serif;
   font-size: 11px;
+  outline: none;
 }
 
 /* Contenedor Principal r1 */
@@ -31,12 +32,13 @@ html, body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 5px;
+  padding: 4px;
   position: relative;
   overflow: hidden;
+  outline: none;
 }
 
-/* Efecto CRT Scanlines Balatro */
+/* Efecto CRT Scanlines sin bloquear toques */
 .r1-container::before {
   content: " ";
   display: block;
@@ -45,8 +47,8 @@ html, body {
   background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
   background-size: 100% 3px;
   z-index: 100;
-  pointer-events: none;
-  opacity: 0.6;
+  pointer-events: none !important;
+  opacity: 0.5;
 }
 
 /* Header */
@@ -55,7 +57,7 @@ html, body {
   justify-content: space-between;
   align-items: center;
   border-bottom: 2px solid #ff0055;
-  padding-bottom: 3px;
+  padding-bottom: 2px;
 }
 
 .title-group {
@@ -65,7 +67,7 @@ html, body {
 }
 
 .chip-icon {
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .header h1 {
@@ -81,7 +83,7 @@ html, body {
   color: #ffffff;
   font-size: 8px;
   font-weight: 800;
-  padding: 2px 6px;
+  padding: 2px 5px;
   border-radius: 4px;
   box-shadow: 0 0 8px rgba(255, 0, 85, 0.6);
 }
@@ -90,7 +92,7 @@ html, body {
 .stats-bar {
   display: flex;
   gap: 4px;
-  margin-top: 3px;
+  margin-top: 2px;
 }
 
 .stat-pill {
@@ -98,7 +100,7 @@ html, body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 2px 6px;
+  padding: 2px 5px;
   border-radius: 4px;
   font-size: 9px;
   font-weight: bold;
@@ -126,8 +128,8 @@ html, body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-top: 3px;
+  gap: 3px;
+  margin-top: 2px;
   position: relative;
 }
 
@@ -140,11 +142,10 @@ html, body {
   position: relative;
 }
 
-/* Sombras de cartas en el mazo para animación de barajar */
 .deck-shadow {
   position: absolute;
-  width: 124px;
-  height: 168px;
+  width: 118px;
+  height: 154px;
   border-radius: 8px;
   background: #14051d;
   border: 1px solid rgba(255, 0, 85, 0.4);
@@ -153,42 +154,42 @@ html, body {
 }
 
 .deck-left {
-  transform: translate(-6px, 3px) rotate(-3deg);
+  transform: translate(-5px, 2px) rotate(-3deg);
   opacity: 0.6;
 }
 
 .deck-right {
-  transform: translate(6px, 3px) rotate(3deg);
+  transform: translate(5px, 2px) rotate(3deg);
   opacity: 0.6;
 }
 
-/* Animación cuando se baraja */
 .card-stage.shuffling-active .deck-left {
-  animation: fanLeft 0.5s ease-in-out infinite alternate;
+  animation: fanLeft 0.4s ease-in-out infinite alternate;
 }
 
 .card-stage.shuffling-active .deck-right {
-  animation: fanRight 0.5s ease-in-out infinite alternate;
+  animation: fanRight 0.4s ease-in-out infinite alternate;
 }
 
 @keyframes fanLeft {
-  0% { transform: translate(-6px, 3px) rotate(-3deg); }
-  100% { transform: translate(-35px, -8px) rotate(-18deg); }
+  0% { transform: translate(-5px, 2px) rotate(-3deg); }
+  100% { transform: translate(-30px, -6px) rotate(-16deg); }
 }
 
 @keyframes fanRight {
-  0% { transform: translate(6px, 3px) rotate(3deg); }
-  100% { transform: translate(35px, -8px) rotate(18deg); }
+  0% { transform: translate(5px, 2px) rotate(3deg); }
+  100% { transform: translate(30px, -6px) rotate(16deg); }
 }
 
 .tarot-card {
-  width: 130px;
-  height: 175px;
+  width: 122px;
+  height: 158px;
   position: relative;
   transform-style: preserve-3d;
-  transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   cursor: pointer;
   z-index: 5;
+  outline: none;
 }
 
 .tarot-card.face-down {
@@ -204,8 +205,8 @@ html, body {
 }
 
 @keyframes shuffleAnim {
-  0% { transform: rotate(-8deg) scale(0.92); }
-  100% { transform: rotate(8deg) scale(1.08); }
+  0% { transform: rotate(-6deg) scale(0.94); }
+  100% { transform: rotate(6deg) scale(1.06); }
 }
 
 .card-face {
@@ -218,7 +219,6 @@ html, body {
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.8);
 }
 
-/* Card Back */
 .card-back {
   background: #1e092b;
   border: 2px solid #ff0055;
@@ -239,12 +239,12 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   z-index: 2;
 }
 
 .eye-symbol {
-  font-size: 28px;
+  font-size: 24px;
   filter: drop-shadow(0 0 8px #ff0055);
 }
 
@@ -255,7 +255,6 @@ html, body {
   letter-spacing: 0.5px;
 }
 
-/* Card Front */
 .card-front {
   transform: rotateY(180deg);
   border: 2px solid #ffcc00;
@@ -274,17 +273,17 @@ html, body {
   left: 0;
   right: 0;
   background: linear-gradient(0deg, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 70%, transparent 100%);
-  padding: 4px;
+  padding: 3px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 1px;
 }
 
 .result-badge {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 900;
-  padding: 1px 12px;
+  padding: 1px 10px;
   border-radius: 4px;
   letter-spacing: 1px;
   box-shadow: 0 0 10px currentColor;
@@ -293,17 +292,17 @@ html, body {
 .result-badge.yes {
   background: #00e676;
   color: #003311;
-  box-shadow: 0 0 12px #00e676;
+  box-shadow: 0 0 10px #00e676;
 }
 
 .result-badge.no {
   background: #ff1744;
   color: #33000a;
-  box-shadow: 0 0 12px #ff1744;
+  box-shadow: 0 0 10px #ff1744;
 }
 
 .card-name {
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 800;
   color: #ffcc00;
 }
@@ -312,15 +311,48 @@ html, body {
 .prompt-box {
   background: rgba(20, 10, 30, 0.9);
   border: 1px solid rgba(255, 204, 0, 0.4);
-  border-radius: 6px;
-  padding: 4px 6px;
+  border-radius: 5px;
+  padding: 3px 5px;
   text-align: center;
 }
 
 .prompt-text {
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 700;
   color: #ffdd66;
+}
+
+/* Barra de Controles Táctiles y Hardware */
+.control-bar {
+  display: flex;
+  gap: 3px;
+  margin-top: 1px;
+}
+
+.ctrl-btn {
+  flex: 1;
+  background: #1f0a2d;
+  border: 1px solid #ff0055;
+  color: #ffcc00;
+  font-size: 8px;
+  font-weight: 800;
+  padding: 4px 2px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.ctrl-btn:active {
+  background: #ff0055;
+  color: #fff;
+  transform: scale(0.95);
+}
+
+.ctrl-btn.main-btn {
+  background: linear-gradient(135deg, #ff0055 0%, #aa0044 100%);
+  color: #ffffff;
+  border-color: #ffcc00;
+  box-shadow: 0 0 6px rgba(255, 0, 85, 0.6);
 }
 
 /* LLM Modal Persistente */
@@ -332,13 +364,13 @@ html, body {
   background: #19092b;
   border: 2px solid #ff0055;
   border-radius: 8px;
-  padding: 6px;
+  padding: 5px;
   font-size: 9px;
   color: #f3e8ff;
-  max-height: 140px;
+  max-height: 135px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
   box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.95);
   z-index: 20;
 }
@@ -373,30 +405,14 @@ html, body {
   text-overflow: ellipsis;
 }
 
-.llm-question-bar small {
-  color: #aaa;
-}
-
 #llm-text {
   overflow-y: auto;
-  max-height: 85px;
-  line-height: 1.35;
-  font-size: 9px;
+  max-height: 80px;
+  line-height: 1.3;
+  font-size: 8px;
   color: #e9d5ff;
 }
 
 .hidden {
   display: none !important;
-}
-
-/* Footer */
-.footer {
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-  padding-top: 3px;
-  text-align: center;
-}
-
-.hint {
-  font-size: 8px;
-  color: #888;
 }

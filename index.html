@@ -6,8 +6,8 @@
   <title>Tarot Arcana Neón - Sí o No</title>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-  <div id="app" class="r1-container neon-theme">
+<body tabindex="0">
+  <div id="app" class="r1-container neon-theme" tabindex="0">
     <!-- Header -->
     <header class="header">
       <div class="title-group">
@@ -33,11 +33,10 @@
 
       <!-- Deck & Tarot Card Stage -->
       <div id="card-stage" class="card-stage">
-        <!-- Deck Shadows for Shuffling Visual -->
         <div class="deck-shadow deck-left"></div>
         <div class="deck-shadow deck-right"></div>
 
-        <div id="tarot-card" class="tarot-card face-down">
+        <div id="tarot-card" class="tarot-card face-down" tabindex="0">
           <!-- Card Back -->
           <div class="card-face card-back">
             <div class="neon-pattern"></div>
@@ -49,18 +48,25 @@
 
           <!-- Card Front -->
           <div class="card-face card-front">
-            <img id="card-img" class="card-art" src="card_yes.jpg" alt="Carta de Tarot">
+            <img id="card-img" class="card-art" src="card_0.jpg" alt="Carta de Tarot">
             <div class="card-overlay">
               <span id="result-badge" class="result-badge yes">SÍ</span>
-              <span id="card-name" class="card-name">EL SOL</span>
+              <span id="card-name" class="card-name">0. EL LOCO</span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Action Prompt & Status Box -->
+      <!-- Action Prompt Box -->
       <div class="prompt-box">
         <span id="prompt-text" class="prompt-text">Pulsa PTT o Clic para Tirar</span>
+      </div>
+
+      <!-- Direct Touch & Hardware Control Bar -->
+      <div class="control-bar">
+        <button id="btn-shuffle" class="ctrl-btn">▲ Barajar</button>
+        <button id="btn-draw" class="ctrl-btn main-btn">🃏 Tirar</button>
+        <button id="btn-oracle" class="ctrl-btn">🎙️ IA</button>
       </div>
 
       <!-- Persistent LLM Interpretation Modal -->
@@ -70,16 +76,11 @@
           <button id="close-llm" class="close-btn">×</button>
         </div>
         <div class="llm-question-bar">
-          <small>Consulta:</small> <span id="llm-question-text">Carta actual</span>
+          <span id="llm-question-text">Escuchando voz por micrófono...</span>
         </div>
-        <p id="llm-text">Cargando interpretación del Oráculo...</p>
+        <p id="llm-text">Cargando respuesta...</p>
       </div>
     </main>
-
-    <!-- Footer Navigation Hint -->
-    <footer class="footer">
-      <span class="hint">▲▼ Rueda: Barajar • PTT Largo: Preguntar IA</span>
-    </footer>
   </div>
 
   <script src="r1-bridge.js"></script>

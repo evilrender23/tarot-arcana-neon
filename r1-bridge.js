@@ -1,10 +1,7 @@
 /**
- * r1-bridge.js - Puente Universal de Eventos de Hardware para Rabbit R1.
- * Captura controles por 4 vías simultáneas:
- * 1. Global Window Handlers (onScrollUp, onScrollDown, onSideClick, onLongPressStart, onLongPressEnd)
- * 2. Teclado Físico Android (ArrowUp/Down, PageUp/Down, Enter, Space, MediaPlayPause, HeadsetHook)
- * 3. Eventos DOM Wheel / Touch (deltaY, gestos)
- * 4. PostMessage IPC de Rabbit OS
+ * r1-bridge.js - Puente de Controles de Hardware Blindado para Rabbit R1.
+ * Enfoca automáticamente la WebView en Android para capturar eventos de teclado,
+ * gestos de rueda, eventos CustomEvent e IPC nativo.
  */
 
 (function() {
@@ -35,6 +32,25 @@
       }
     }
   }
+
+  // Enfoque automático de la WebView en Android para recibir eventos de teclado de hardware
+  function forceFocus() {
+    try {
+      window.focus();
+      if (document.body) document.body.focus();
+      const app = document.getElementById('app');
+      if (app) app.focus();
+    } catch (e) {}
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', forceFocus);
+  } else {
+    forceFocus();
+  }
+  window.addEventListener('click', forceFocus);
+  window.addEventListener('touchstart', forceFocus);
+  setInterval(forceFocus, 1500);
 
   const R1Bridge = {
     listeners: {},
@@ -125,41 +141,69 @@
   window.R1Bridge = R1Bridge;
 
   // -------------------------------------------------------------------
-  // VÍA 1: Handlers Globales Directos en window (Llamados por Rabbit OS)
+  // VÍA 1: CustomEvents y Global Window Handlers de Rabbit OS
   // -------------------------------------------------------------------
+  ['scrollUp', 'scrollDown', 'sideClick', 'longPressStart', 'longPressEnd', 'rabbitEvent', 'pluginMessage'].forEach(evtName => {
+    window.addEventListener(evtName, function(e) {
+      const detail = (e && e.detail) ? e.detail : {};
+      R1Bridge.emit(evtName, detail);
+      if (detail.type) R1Bridge.emit(detail.type, detail);
+    });
+    document.addEventListener(evtName, function(e) {
+      const detail = (e && e.detail) ? e.detail : {};
+      R1Bridge.emit(evtName, detail);
+      if (detail.type) R1Bridge.emit(detail.type, detail);
+    });
+  });
+
   window.onScrollUp = window.onscrollup = function() { R1Bridge.emit('scrollUp'); };
   window.onScrollDown = window.onscrolldown = function() { R1Bridge.emit('scrollDown'); };
   window.onSideClick = window.onsideclick = function() { R1Bridge.emit('sideClick'); };
   window.onLongPressStart = window.onlongpressstart = function() { R1Bridge.emit('longPressStart'); };
   window.onLongPressEnd = window.onlongpressend = function() { R1Bridge.emit('longPressEnd'); };
 
+  window.onPluginMessage = function(data) {
+    try {
+      let parsed = typeof data === 'string' ? JSON.parse(data) : data;
+      if (parsed.type) R1Bridge.emit(parsed.type, parsed);
+      if (R1Bridge.messageCallback) R1Bridge.messageCallback(parsed);
+    } catch (e) {
+      if (R1Bridge.messageCallback) R1Bridge.messageCallback(data);
+    }
+  };
+
+  window.handleRabbitEvent = window.onRabbitEvent = function(name, payload) {
+    if (name) R1Bridge.emit(name, payload);
+  };
+
   // -------------------------------------------------------------------
-  // VÍA 2: Teclado Físico Android & Teclas del Dispositivo (Keydown/Keyup)
+  // VÍA 2: Teclado Físico Android & Botón PTT (Keydown/Keyup)
   // -------------------------------------------------------------------
   let pttTimer = null;
   let pttPressed = false;
 
   window.addEventListener('keydown', function(e) {
+    forceFocus();
     const k = e.key || '';
     const code = e.keyCode || e.which || 0;
 
-    // Rueda R1 (Arriba)
-    if (k === 'ArrowUp' || k === 'PageUp' || code === 38 || code === 33) {
+    // Rueda R1 (Arriba / Izquierda)
+    if (k === 'ArrowUp' || k === 'PageUp' || k === 'ArrowLeft' || code === 38 || code === 33 || code === 37) {
       e.preventDefault();
       R1Bridge.emit('scrollUp');
     }
-    // Rueda R1 (Abajo)
-    else if (k === 'ArrowDown' || k === 'PageDown' || code === 40 || code === 34) {
+    // Rueda R1 (Abajo / Derecha)
+    else if (k === 'ArrowDown' || k === 'PageDown' || k === 'ArrowRight' || code === 40 || code === 34 || code === 39) {
       e.preventDefault();
       R1Bridge.emit('scrollDown');
     }
     // Botón PTT Lateral R1
-    else if (k === 'Enter' || k === ' ' || k === 'MediaPlayPause' || k === 'HeadsetHook' || code === 13 || code === 32 || code === 79 || code === 179) {
+    else if (k === 'Enter' || k === ' ' || k === 'MediaPlayPause' || k === 'HeadsetHook' || code === 13 || code === 32 || code === 79 || code === 179 || code === 66) {
       if (!pttPressed) {
         pttPressed = true;
         pttTimer = setTimeout(() => {
           R1Bridge.emit('longPressStart');
-        }, 300);
+        }, 250);
       }
     }
   }, true);
@@ -168,16 +212,14 @@
     const k = e.key || '';
     const code = e.keyCode || e.which || 0;
 
-    if (k === 'Enter' || k === ' ' || k === 'MediaPlayPause' || k === 'HeadsetHook' || code === 13 || code === 32 || code === 79 || code === 179) {
+    if (k === 'Enter' || k === ' ' || k === 'MediaPlayPause' || k === 'HeadsetHook' || code === 13 || code === 32 || code === 79 || code === 179 || code === 66) {
       if (pttPressed) {
         pttPressed = false;
         if (pttTimer) {
           clearTimeout(pttTimer);
           pttTimer = null;
-          // Si soltó rápido, fue un SideClick
           R1Bridge.emit('sideClick');
         } else {
-          // Si soltó tras mantener, fue LongPressEnd
           R1Bridge.emit('longPressEnd');
         }
       }
@@ -185,7 +227,7 @@
   }, true);
 
   // -------------------------------------------------------------------
-  // VÍA 3: Evento Wheel / Scroll del Navegador
+  // VÍA 3: Wheel y Rueda de Desplazamiento
   // -------------------------------------------------------------------
   window.addEventListener('wheel', function(e) {
     if (e.deltaY < 0) {
@@ -219,7 +261,7 @@
         R1Bridge.messageCallback(data);
       }
     } catch (e) {
-      console.warn('[r1-bridge] Error procesando evento message:', e);
+      console.warn('[r1-bridge] Error en message:', e);
     }
   });
 
