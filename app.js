@@ -1,8 +1,7 @@
 /**
  * app.js - Tarot Arcana Neón (Sí o No) para Rabbit R1
- * Modo IA transparente: Al mantener presionado el botón lateral PTT de Rabbit R1,
- * Rabbit OS escucha la petición de voz del usuario y el LLM responde directamente
- * a su pregunta basándose en su voz sin sesgar ni forzar la respuesta.
+ * Captura activa de micrófono con webkitSpeechRecognition y eventos nativos de voz de Rabbit OS.
+ * Muestra la pregunta hablada exacta del usuario en pantalla y envía la petición al LLM.
  */
 
 (function() {
@@ -42,9 +41,45 @@
   let isShuffling = false;
   let isListeningVoice = false;
   let currentCard = null;
+  let speechRecognizer = null;
+  let userSpokenQuery = '';
+
+  // -------------------------------------------------------------
+  // Inicialización del Reconocimiento de Voz por Micrófono
+  // -------------------------------------------------------------
+  function initSpeechRecognition() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      try {
+        speechRecognizer = new SpeechRecognition();
+        speechRecognizer.continuous = false;
+        speechRecognizer.interimResults = true;
+        speechRecognizer.lang = 'es-ES';
+
+        speechRecognizer.onresult = function(event) {
+          let transcript = '';
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            transcript += event.results[i][0].transcript;
+          }
+          if (transcript.trim()) {
+            userSpokenQuery = transcript.trim();
+            const qText = document.getElementById('llm-question-text');
+            if (qText) qText.textContent = `Pregunta: "${userSpokenQuery}"`;
+            const promptText = document.getElementById('prompt-text');
+            if (promptText) promptText.textContent = `🎙️ "${userSpokenQuery}"`;
+          }
+        };
+
+        speechRecognizer.onerror = function(e) {
+          console.warn('[Micrófono] Error de reconocimiento:', e);
+        };
+      } catch (e) {
+        console.warn('[Micrófono] No se pudo inicializar SpeechRecognition:', e);
+      }
+    }
+  }
 
   function initApp() {
-    // Elementos DOM
     const scoreVal = document.getElementById('score-val');
     const ratioVal = document.getElementById('ratio-val');
     const cardStage = document.getElementById('card-stage');
@@ -65,6 +100,7 @@
       };
     }
 
+    initSpeechRecognition();
     updateStatsDisplay();
     loadState();
 
@@ -212,15 +248,22 @@
     }
 
     // -------------------------------------------------------------
-    // Modo IA Directo y Sin Sesgo (Petición de Voz del Usuario)
+    // Captura de Micrófono & Consulta IA Directa al Mantener PTT
     // -------------------------------------------------------------
     function onPTTHoldStart() {
       isListeningVoice = true;
+      userSpokenQuery = '';
 
-      const cardContext = currentCard ? `${currentCard.name} (${currentCard.type})` : 'Sin carta tirada';
+      // Iniciar captura por micrófono HTML5 si está soportado
+      if (speechRecognizer) {
+        try {
+          speechRecognizer.start();
+        } catch (e) {}
+      }
+
       if (promptText) promptText.textContent = '🎙️ Escuchando tu pregunta... (Manten presionado)';
-      if (llmQuestionText) llmQuestionText.textContent = `Voz activa (${cardContext})`;
-      if (llmText) llmText.textContent = 'Habla tu petición ahora... Suelta el botón para procesar.';
+      if (llmQuestionText) llmQuestionText.textContent = 'Escuchando tu voz por el micrófono...';
+      if (llmText) llmText.textContent = 'Habla tu duda ahora. Al soltar el botón se procesará tu pregunta exacta.';
       if (llmBox) llmBox.classList.remove('hidden');
     }
 
@@ -228,21 +271,46 @@
       if (!isListeningVoice) return;
       isListeningVoice = false;
 
-      const cardContext = currentCard ? `Carta actual: ${currentCard.name} (${currentCard.type})` : 'Mazo de Tarot';
+      // Detener captura por micrófono HTML5
+      if (speechRecognizer) {
+        try {
+          speechRecognizer.stop();
+        } catch (e) {}
+      }
 
-      if (promptText) promptText.textContent = '🔮 Procesando tu petición de voz...';
-      if (llmText) llmText.textContent = 'Procesando tu voz con la IA de Rabbit OS...';
+      setTimeout(() => {
+        const cardContext = currentCard ? `Carta actual: ${currentCard.name} (${currentCard.type})` : 'Mazo de Tarot';
+        const finalQuery = userSpokenQuery ? `Pregunta hablada por el usuario: "${userSpokenQuery}"` : 'Consulta de voz del usuario';
 
-      // Enviar contexto neutral a Rabbit OS para que el LLM responda directamente a la voz del usuario
-      R1Bridge.postMessage({
-        message: `[Tarot Arcana]: ${cardContext}. Responde directamente a la petición de voz formulada por el usuario de forma clara e imparcial.`,
-        useLLM: true,
-        wantsR1Response: true
-      });
+        if (promptText) promptText.textContent = '🔮 Enviando petición de voz a la IA...';
+        if (llmQuestionText) llmQuestionText.textContent = userSpokenQuery ? `"${userSpokenQuery}"` : 'Petición de voz';
+        if (llmText) llmText.textContent = 'Procesando la pregunta en el Oráculo de Rabbit OS...';
+
+        // Enviar petición con la frase capturada del micrófono hacia Rabbit OS
+        R1Bridge.postMessage({
+          message: `[Tarot Arcana]: ${cardContext}. ${finalQuery}. Responde a su pregunta con precisión.`,
+          useLLM: true,
+          wantsR1Response: true
+        });
+      }, 300);
     }
 
-    // Recibir respuesta del LLM nativo de Rabbit OS y mostrarla
+    // -------------------------------------------------------------
+    // Escuchar Eventos de Mensaje y Transcripción Nativa de Rabbit OS
+    // -------------------------------------------------------------
     R1Bridge.onMessage((data) => {
+      // Capturar transcripción hablada nativa enviada por Rabbit OS
+      if (data && (data.type === 'speechResult' || data.transcript || data.text || data.spokenText)) {
+        const spoken = data.transcript || data.text || data.speechResult || data.spokenText;
+        if (spoken) {
+          userSpokenQuery = spoken;
+          if (llmQuestionText) llmQuestionText.textContent = `Pregunta: "${userSpokenQuery}"`;
+          if (promptText) promptText.textContent = `🎙️ "${userSpokenQuery}"`;
+        }
+        return;
+      }
+
+      // Procesar respuesta del LLM
       let reply = '';
       if (data && data.data) {
         try {
@@ -256,14 +324,14 @@
       }
 
       if (!reply) {
-        reply = `El Oráculo de Rabbit OS ha recibido tu consulta sobre ${currentCard ? currentCard.name : 'la tirada'}.`;
+        reply = `El Oráculo de Rabbit OS ha procesado tu consulta sobre ${currentCard ? currentCard.name : 'la tirada'}.`;
       }
 
       if (llmText && llmBox) {
         llmText.textContent = reply;
-        if (llmQuestionText) llmQuestionText.textContent = 'Respuesta de Voz IA';
+        if (llmQuestionText) llmQuestionText.textContent = userSpokenQuery ? `"${userSpokenQuery}"` : 'Pregunta procesada';
         llmBox.classList.remove('hidden');
-        if (promptText) promptText.textContent = 'Respuesta IA recibida.';
+        if (promptText) promptText.textContent = 'Respuesta de voz procesada.';
       }
     });
 
@@ -286,12 +354,10 @@
       drawCard();
     });
 
-    // Mantener presionado el botón de interactuar (PTT)
     R1Bridge.on('longPressStart', () => {
       onPTTHoldStart();
     });
 
-    // Soltar el botón de interactuar (PTT)
     R1Bridge.on('longPressEnd', () => {
       onPTTHoldRelease();
     });
