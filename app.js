@@ -1,6 +1,6 @@
 /**
  * app.js - Tarot Arcana Neón (Sí o No) para Rabbit R1
- * Enlace directo de controles por hardware de 4 vías + Botones táctiles R1.
+ * Prompt Maestro para el Oráculo IA: Respuesta tajante, coherente y directa en máximo 2 frases.
  */
 
 (function() {
@@ -32,7 +32,6 @@
     { id: 21, type: 'YES', name: 'XXI. EL MUNDO', image: 'card_21.jpg', speech: '¡SÍ! El Mundo celebra tu realización total y triunfo.' }
   ];
 
-  // Estado de la App
   let yesCount = 0;
   let noCount = 0;
   let score = 0;
@@ -87,7 +86,6 @@
     const llmText = document.getElementById('llm-text');
     const closeLlmBtn = document.getElementById('close-llm');
 
-    // Botones de control directo
     const btnShuffle = document.getElementById('btn-shuffle');
     const btnDraw = document.getElementById('btn-draw');
     const btnOracle = document.getElementById('btn-oracle');
@@ -233,6 +231,9 @@
       } catch (e) {}
     }
 
+    // -------------------------------------------------------------
+    // Prompt Maestro para el Oráculo IA
+    // -------------------------------------------------------------
     function onPTTHoldStart() {
       isListeningVoice = true;
       userSpokenQuery = '';
@@ -241,9 +242,9 @@
         try { speechRecognizer.start(); } catch (e) {}
       }
 
-      if (promptText) promptText.textContent = '🎙️ Escuchando tu pregunta... (Manten presionado)';
-      if (llmQuestionText) llmQuestionText.textContent = 'Escuchando tu voz por el micrófono...';
-      if (llmText) llmText.textContent = 'Habla tu duda ahora. Al soltar el botón se procesará tu pregunta exacta.';
+      if (promptText) promptText.textContent = '🎙️ Escuchando tu duda...';
+      if (llmQuestionText) llmQuestionText.textContent = 'Escuchando tu voz...';
+      if (llmText) llmText.textContent = 'Formula tu pregunta claramente y suelta el botón.';
       if (llmBox) llmBox.classList.remove('hidden');
     }
 
@@ -256,15 +257,18 @@
       }
 
       setTimeout(() => {
-        const cardContext = currentCard ? `Carta actual: ${currentCard.name} (${currentCard.type})` : 'Mazo de Tarot';
-        const finalQuery = userSpokenQuery ? `Pregunta hablada por el usuario: "${userSpokenQuery}"` : 'Consulta de voz del usuario';
+        const cardContext = currentCard ? `${currentCard.name} (${currentCard.type})` : '0. EL LOCO (SÍ)';
+        const finalQuery = userSpokenQuery ? userSpokenQuery : '¿Qué augura esta tirada?';
 
-        if (promptText) promptText.textContent = '🔮 Enviando petición de voz a la IA...';
-        if (llmQuestionText) llmQuestionText.textContent = userSpokenQuery ? `"${userSpokenQuery}"` : 'Petición de voz';
-        if (llmText) llmText.textContent = 'Procesando la pregunta en el Oráculo de Rabbit OS...';
+        // PROMPT MAESTRO CONCISO Y TAJANTE PARA RABBIT OS
+        const masterPrompt = `[Oráculo Arcana R1]: Eres un oráculo de tarot tajante y certero. Arcano actual: ${cardContext}. Pregunta hablada del usuario: "${finalQuery}". Responde de forma directa, coherente y sin rodeos en máximo 2 frases.`;
+
+        if (promptText) promptText.textContent = '🔮 Oráculo IA respondiendo...';
+        if (llmQuestionText) llmQuestionText.textContent = userSpokenQuery ? `"${userSpokenQuery}"` : 'Consulta de voz';
+        if (llmText) llmText.textContent = 'Consultando al Oráculo R1...';
 
         R1Bridge.postMessage({
-          message: `[Tarot Arcana]: ${cardContext}. ${finalQuery}. Responde a su pregunta con precisión.`,
+          message: masterPrompt,
           useLLM: true,
           wantsR1Response: true
         });
@@ -295,19 +299,19 @@
       }
 
       if (!reply) {
-        reply = `El Oráculo de Rabbit OS ha procesado tu consulta sobre ${currentCard ? currentCard.name : 'la tirada'}.`;
+        reply = `El Arcano ${currentCard ? currentCard.name : 'consultado'} te dicta actuar con decisión y seguir tu certeza interior.`;
       }
 
       if (llmText && llmBox) {
         llmText.textContent = reply;
-        if (llmQuestionText) llmQuestionText.textContent = userSpokenQuery ? `"${userSpokenQuery}"` : 'Pregunta procesada';
+        if (llmQuestionText) llmQuestionText.textContent = userSpokenQuery ? `"${userSpokenQuery}"` : 'Consulta procesada';
         llmBox.classList.remove('hidden');
-        if (promptText) promptText.textContent = 'Respuesta de voz procesada.';
+        if (promptText) promptText.textContent = 'Respuesta del Oráculo recibida.';
       }
     });
 
     // -------------------------------------------------------------
-    // Enlace de Eventos de Hardware R1 y Botones en Pantalla
+    // Enlace de Eventos
     // -------------------------------------------------------------
     R1Bridge.on('scrollUp', () => {
       score += 10;
@@ -333,7 +337,6 @@
       onPTTHoldRelease();
     });
 
-    // Botones de control táctil directo
     if (btnShuffle) btnShuffle.addEventListener('click', () => {
       score += 10;
       updateStatsDisplay();
