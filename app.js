@@ -1,13 +1,14 @@
 /**
  * app.js - Tarot Arcana Neón (Sí o No) para Rabbit R1
- * Baraja completa de los 22 Arcanos Mayores del Tarot (0 al XXI) con imágenes dedicadas
- * y lecturas en voz alta 100% alineadas.
+ * Modo IA transparente: Al mantener presionado el botón lateral PTT de Rabbit R1,
+ * Rabbit OS escucha la petición de voz del usuario y el LLM responde directamente
+ * a su pregunta basándose en su voz sin sesgar ni forzar la respuesta.
  */
 
 (function() {
   'use strict';
 
-  // Baraja Completa de los 22 Arcanos Mayores (0 al XXI) con archivos dedicados card_0.jpg a card_21.jpg
+  // Baraja Completa de los 22 Arcanos Mayores (0 al XXI)
   const CARDS = [
     { id: 0, type: 'YES', name: '0. EL LOCO', image: 'card_0.jpg', speech: '¡SÍ! El Loco anuncia nuevos comienzos y aventura sin miedo.' },
     { id: 1, type: 'YES', name: 'I. EL MAGO', image: 'card_1.jpg', speech: '¡SÍ! El Mago manifiesta tu deseo con todo tu poder.' },
@@ -39,9 +40,8 @@
   let score = 0;
   let isFlipped = false;
   let isShuffling = false;
-  let isPressingIA = false;
+  let isListeningVoice = false;
   let currentCard = null;
-  let currentQuestion = 'Tirada General de Tarot Arcana';
 
   function initApp() {
     // Elementos DOM
@@ -58,7 +58,6 @@
     const llmText = document.getElementById('llm-text');
     const closeLlmBtn = document.getElementById('close-llm');
 
-    // Manejar error de carga de imagen para fallback inmediato
     if (cardImg) {
       cardImg.onerror = function() {
         this.onerror = null;
@@ -110,7 +109,7 @@
       tarotCard.classList.add('shuffling');
       playShuffleSound();
 
-      if (promptText) promptText.textContent = '🔮 Barajando los 22 Arcanos...';
+      if (promptText) promptText.textContent = '🔮 Barajando mazo...';
 
       setTimeout(() => {
         cardStage.classList.remove('shuffling-active');
@@ -127,7 +126,6 @@
       if (isShuffling) return;
 
       if (isFlipped) {
-        // Cubrir carta
         isFlipped = false;
         tarotCard.classList.remove('face-up');
         tarotCard.classList.add('face-down');
@@ -135,12 +133,10 @@
         return;
       }
 
-      // Animación de barajado antes de revelar
       triggerShuffleAnimation(() => {
         const randomIndex = Math.floor(Math.random() * CARDS.length);
         currentCard = CARDS[randomIndex];
 
-        // Asignar imagen dedicada específica card_0.jpg a card_21.jpg
         if (cardImg) cardImg.src = currentCard.image;
         if (cardName) cardName.textContent = currentCard.name;
 
@@ -149,7 +145,6 @@
           resultBadge.className = `result-badge ${currentCard.type.toLowerCase()}`;
         }
 
-        // Revelar carta
         isFlipped = true;
         tarotCard.classList.remove('face-down');
         tarotCard.classList.add('face-up');
@@ -217,33 +212,36 @@
     }
 
     // -------------------------------------------------------------
-    // Consulta IA Persistente (Rabbit OS LLM)
+    // Modo IA Directo y Sin Sesgo (Petición de Voz del Usuario)
     // -------------------------------------------------------------
-    function startIAQuestion() {
-      isPressingIA = true;
-      const cardContext = currentCard ? `${currentCard.name} (${currentCard.type})` : 'Mazo de Arcanos';
-      currentQuestion = `¿Qué significa la carta ${cardContext} para mí?`;
+    function onPTTHoldStart() {
+      isListeningVoice = true;
 
-      if (promptText) promptText.textContent = '🎙️ Escuchando pregunta... (Mantén pulsado)';
-      if (llmQuestionText) llmQuestionText.textContent = currentQuestion;
-      if (llmText) llmText.textContent = 'Escuchando tu voz... Suelta el botón para enviar la consulta.';
+      const cardContext = currentCard ? `${currentCard.name} (${currentCard.type})` : 'Sin carta tirada';
+      if (promptText) promptText.textContent = '🎙️ Escuchando tu pregunta... (Manten presionado)';
+      if (llmQuestionText) llmQuestionText.textContent = `Voz activa (${cardContext})`;
+      if (llmText) llmText.textContent = 'Habla tu petición ahora... Suelta el botón para procesar.';
       if (llmBox) llmBox.classList.remove('hidden');
     }
 
-    function finishIAQuestion() {
-      if (!isPressingIA) return;
-      isPressingIA = false;
+    function onPTTHoldRelease() {
+      if (!isListeningVoice) return;
+      isListeningVoice = false;
 
-      if (promptText) promptText.textContent = '🔮 Enviando consulta al Oráculo IA...';
-      if (llmText) llmText.textContent = '🔮 Oráculo Arcana interpretando tu tirada...';
+      const cardContext = currentCard ? `Carta actual: ${currentCard.name} (${currentCard.type})` : 'Mazo de Tarot';
 
+      if (promptText) promptText.textContent = '🔮 Procesando tu petición de voz...';
+      if (llmText) llmText.textContent = 'Procesando tu voz con la IA de Rabbit OS...';
+
+      // Enviar contexto neutral a Rabbit OS para que el LLM responda directamente a la voz del usuario
       R1Bridge.postMessage({
-        message: `[Tarot Arcana]: ${currentQuestion}. Por favor responde brevemente como un sabio oráculo de tarot.`,
+        message: `[Tarot Arcana]: ${cardContext}. Responde directamente a la petición de voz formulada por el usuario de forma clara e imparcial.`,
         useLLM: true,
         wantsR1Response: true
       });
     }
 
+    // Recibir respuesta del LLM nativo de Rabbit OS y mostrarla
     R1Bridge.onMessage((data) => {
       let reply = '';
       if (data && data.data) {
@@ -258,19 +256,19 @@
       }
 
       if (!reply) {
-        reply = `El Arcano ${currentCard ? currentCard.name : 'elegido'} te aconseja mantener la fe y seguir tu instinto.`;
+        reply = `El Oráculo de Rabbit OS ha recibido tu consulta sobre ${currentCard ? currentCard.name : 'la tirada'}.`;
       }
 
       if (llmText && llmBox) {
         llmText.textContent = reply;
-        if (llmQuestionText) llmQuestionText.textContent = currentQuestion;
+        if (llmQuestionText) llmQuestionText.textContent = 'Respuesta de Voz IA';
         llmBox.classList.remove('hidden');
-        if (promptText) promptText.textContent = 'Oráculo Arcana ha respondido.';
+        if (promptText) promptText.textContent = 'Respuesta IA recibida.';
       }
     });
 
     // -------------------------------------------------------------
-    // Eventos de Hardware R1
+    // Eventos de Hardware R1 (Rueda & Botón PTT)
     // -------------------------------------------------------------
     R1Bridge.on('scrollUp', () => {
       score += 10;
@@ -288,12 +286,14 @@
       drawCard();
     });
 
+    // Mantener presionado el botón de interactuar (PTT)
     R1Bridge.on('longPressStart', () => {
-      startIAQuestion();
+      onPTTHoldStart();
     });
 
+    // Soltar el botón de interactuar (PTT)
     R1Bridge.on('longPressEnd', () => {
-      finishIAQuestion();
+      onPTTHoldRelease();
     });
 
     tarotCard.addEventListener('click', drawCard);
