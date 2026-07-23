@@ -1,36 +1,36 @@
 /**
  * app.js - Tarot Arcana Neón (Sí o No) para Rabbit R1
- * Incluye animación de barajado del mazo, 22 Arcanos Mayores y consulta de IA
- * persistente al mantener presionado el botón lateral de Rabbit R1.
+ * Baraja completa de los 22 Arcanos Mayores del Tarot (0 al XXI) con imágenes dedicadas
+ * y lecturas en voz alta 100% alineadas.
  */
 
 (function() {
   'use strict';
 
-  // Baraja Completa de los 22 Arcanos Mayores (0 al XXI)
+  // Baraja Completa de los 22 Arcanos Mayores (0 al XXI) con archivos dedicados card_0.jpg a card_21.jpg
   const CARDS = [
-    { id: 0, type: 'YES', name: '0. EL LOCO', image: 'card_loco.jpg', speech: '¡SÍ! El Loco anuncia nuevos comienzos y aventura sin miedo.' },
-    { id: 1, type: 'YES', name: 'I. EL MAGO', image: 'card_mago.jpg', speech: '¡SÍ! El Mago manifiesta tu deseo con todo tu poder.' },
-    { id: 2, type: 'YES', name: 'II. SACERDOTISA', image: 'card_estrella.jpg', speech: '¡SÍ! La Sacerdotisa pide confiar en tu intuición.' },
-    { id: 3, type: 'YES', name: 'III. EMPERATRIZ', image: 'card_yes.jpg', speech: '¡SÍ! La Emperatriz trae abundancia y florecimiento.' },
-    { id: 4, type: 'YES', name: 'IV. EMPERADOR', image: 'card_mago.jpg', speech: '¡SÍ! El Emperador afirma estructura, control y éxito.' },
-    { id: 5, type: 'YES', name: 'V. EL PAPA', image: 'card_estrella.jpg', speech: '¡SÍ! El Sumo Sacerdote bendice tu camino.' },
-    { id: 6, type: 'YES', name: 'VI. ENAMORADOS', image: 'card_yes.jpg', speech: '¡SÍ! Los Enamorados auguran armonía y elecciones sabias.' },
-    { id: 7, type: 'YES', name: 'VII. EL CARRO', image: 'card_mago.jpg', speech: '¡SÍ! El Carro impulsa tu victoria con determinación.' },
-    { id: 8, type: 'YES', name: 'VIII. LA FUERZA', image: 'card_yes.jpg', speech: '¡SÍ! La Fuerza demuestra tu valor interior.' },
-    { id: 9, type: 'NO', name: 'IX. ERMITAÑO', image: 'card_no.jpg', speech: '¡NO! El Ermitaño sugiere introspección antes de actuar.' },
-    { id: 10, type: 'YES', name: 'X. LA RUEDA', image: 'card_yes.jpg', speech: '¡SÍ! La Rueda de la Fortuna gira a tu favor.' },
-    { id: 11, type: 'YES', name: 'XI. LA JUSTICIA', image: 'card_juicio.jpg', speech: '¡SÍ! La Justicia equilibra la verdad y la equidad.' },
-    { id: 12, type: 'NO', name: 'XII. EL COLGADO', image: 'card_torre.jpg', speech: '¡NO! El Colgado pide pausar y ver otro ángulo.' },
-    { id: 13, type: 'NO', name: 'XIII. LA MUERTE', image: 'card_muerte.jpg', speech: '¡NO! La Muerte marca el fin de un ciclo para transformar.' },
-    { id: 14, type: 'YES', name: 'XIV. TEMPLANZA', image: 'card_estrella.jpg', speech: '¡SÍ! La Templanza trae equilibrio y armonía.' },
-    { id: 15, type: 'NO', name: 'XV. EL DIABLO', image: 'card_no.jpg', speech: '¡NO! El Diablo advierte contra ataduras e impulsos.' },
-    { id: 16, type: 'NO', name: 'XVI. LA TORRE', image: 'card_torre.jpg', speech: '¡NO! La Torre indica cambios y revelaciones repentinas.' },
-    { id: 17, type: 'YES', name: 'XVII. ESTRELLA', image: 'card_estrella.jpg', speech: '¡SÍ! La Estrella concede tu mayor esperanza.' },
-    { id: 18, type: 'NO', name: 'XVIII. LA LUNA', image: 'card_no.jpg', speech: '¡NO! La Luna sugiere misterios y cautela.' },
-    { id: 19, type: 'YES', name: 'XIX. EL SOL', image: 'card_yes.jpg', speech: '¡SÍ! El Sol ilumina tu camino con alegría y plenitud.' },
-    { id: 20, type: 'NO', name: 'XX. EL JUICIO', image: 'card_juicio.jpg', speech: '¡NO! El Juicio pide evaluar las consecuencias.' },
-    { id: 21, type: 'YES', name: 'XXI. EL MUNDO', image: 'card_mundo.jpg', speech: '¡SÍ! El Mundo celebra tu realización total y triunfo.' }
+    { id: 0, type: 'YES', name: '0. EL LOCO', image: 'card_0.jpg', speech: '¡SÍ! El Loco anuncia nuevos comienzos y aventura sin miedo.' },
+    { id: 1, type: 'YES', name: 'I. EL MAGO', image: 'card_1.jpg', speech: '¡SÍ! El Mago manifiesta tu deseo con todo tu poder.' },
+    { id: 2, type: 'YES', name: 'II. SACERDOTISA', image: 'card_2.jpg', speech: '¡SÍ! La Sacerdotisa pide confiar en tu intuición.' },
+    { id: 3, type: 'YES', name: 'III. EMPERATRIZ', image: 'card_3.jpg', speech: '¡SÍ! La Emperatriz trae abundancia y florecimiento.' },
+    { id: 4, type: 'YES', name: 'IV. EMPERADOR', image: 'card_4.jpg', speech: '¡SÍ! El Emperador afirma estructura, control y éxito.' },
+    { id: 5, type: 'YES', name: 'V. EL PAPA', image: 'card_5.jpg', speech: '¡SÍ! El Sumo Sacerdote bendice tu camino.' },
+    { id: 6, type: 'YES', name: 'VI. ENAMORADOS', image: 'card_6.jpg', speech: '¡SÍ! Los Enamorados auguran armonía y elecciones sabias.' },
+    { id: 7, type: 'YES', name: 'VII. EL CARRO', image: 'card_7.jpg', speech: '¡SÍ! El Carro impulsa tu victoria con determinación.' },
+    { id: 8, type: 'YES', name: 'VIII. LA FUERZA', image: 'card_8.jpg', speech: '¡SÍ! La Fuerza demuestra tu valor interior.' },
+    { id: 9, type: 'NO', name: 'IX. ERMITAÑO', image: 'card_9.jpg', speech: '¡NO! El Ermitaño sugiere introspección antes de actuar.' },
+    { id: 10, type: 'YES', name: 'X. LA RUEDA', image: 'card_10.jpg', speech: '¡SÍ! La Rueda de la Fortuna gira a tu favor.' },
+    { id: 11, type: 'YES', name: 'XI. LA JUSTICIA', image: 'card_11.jpg', speech: '¡SÍ! La Justicia equilibra la verdad y la equidad.' },
+    { id: 12, type: 'NO', name: 'XII. EL COLGADO', image: 'card_12.jpg', speech: '¡NO! El Colgado pide pausar y ver otro ángulo.' },
+    { id: 13, type: 'NO', name: 'XIII. LA MUERTE', image: 'card_13.jpg', speech: '¡NO! La Muerte marca el fin de un ciclo para transformar.' },
+    { id: 14, type: 'YES', name: 'XIV. TEMPLANZA', image: 'card_14.jpg', speech: '¡SÍ! La Templanza trae equilibrio y armonía.' },
+    { id: 15, type: 'NO', name: 'XV. EL DIABLO', image: 'card_15.jpg', speech: '¡NO! El Diablo advierte contra ataduras e impulsos.' },
+    { id: 16, type: 'NO', name: 'XVI. LA TORRE', image: 'card_16.jpg', speech: '¡NO! La Torre indica cambios y revelaciones repentinas.' },
+    { id: 17, type: 'YES', name: 'XVII. ESTRELLA', image: 'card_17.jpg', speech: '¡SÍ! La Estrella concede tu mayor esperanza.' },
+    { id: 18, type: 'NO', name: 'XVIII. LA LUNA', image: 'card_18.jpg', speech: '¡NO! La Luna sugiere misterios y cautela.' },
+    { id: 19, type: 'YES', name: 'XIX. EL SOL', image: 'card_19.jpg', speech: '¡SÍ! El Sol ilumina tu camino con alegría y plenitud.' },
+    { id: 20, type: 'NO', name: 'XX. EL JUICIO', image: 'card_20.jpg', speech: '¡NO! El Juicio pide evaluar las consecuencias.' },
+    { id: 21, type: 'YES', name: 'XXI. EL MUNDO', image: 'card_21.jpg', speech: '¡SÍ! El Mundo celebra tu realización total y triunfo.' }
   ];
 
   // Estado de la App
@@ -57,6 +57,14 @@
     const llmQuestionText = document.getElementById('llm-question-text');
     const llmText = document.getElementById('llm-text');
     const closeLlmBtn = document.getElementById('close-llm');
+
+    // Manejar error de carga de imagen para fallback inmediato
+    if (cardImg) {
+      cardImg.onerror = function() {
+        this.onerror = null;
+        this.src = 'card_yes.jpg';
+      };
+    }
 
     updateStatsDisplay();
     loadState();
@@ -113,7 +121,7 @@
     }
 
     // -------------------------------------------------------------
-    // Tirada de Carta (Sí o No de los 22 Arcanos)
+    // Tirada de Carta
     // -------------------------------------------------------------
     function drawCard() {
       if (isShuffling) return;
@@ -127,11 +135,12 @@
         return;
       }
 
-      // Ejecutar animación de barajado antes de revelar
+      // Animación de barajado antes de revelar
       triggerShuffleAnimation(() => {
         const randomIndex = Math.floor(Math.random() * CARDS.length);
         currentCard = CARDS[randomIndex];
 
+        // Asignar imagen dedicada específica card_0.jpg a card_21.jpg
         if (cardImg) cardImg.src = currentCard.image;
         if (cardName) cardName.textContent = currentCard.name;
 
@@ -228,7 +237,6 @@
       if (promptText) promptText.textContent = '🔮 Enviando consulta al Oráculo IA...';
       if (llmText) llmText.textContent = '🔮 Oráculo Arcana interpretando tu tirada...';
 
-      // Comunicar con Rabbit OS activando LLM y voz
       R1Bridge.postMessage({
         message: `[Tarot Arcana]: ${currentQuestion}. Por favor responde brevemente como un sabio oráculo de tarot.`,
         useLLM: true,
@@ -236,7 +244,6 @@
       });
     }
 
-    // Manejar respuesta del LLM manteniendo la pregunta visible
     R1Bridge.onMessage((data) => {
       let reply = '';
       if (data && data.data) {
@@ -263,7 +270,7 @@
     });
 
     // -------------------------------------------------------------
-    // Eventos de Hardware R1 (Rueda & Botón PTT)
+    // Eventos de Hardware R1
     // -------------------------------------------------------------
     R1Bridge.on('scrollUp', () => {
       score += 10;
@@ -281,17 +288,14 @@
       drawCard();
     });
 
-    // Presionar y mantener botón lateral
     R1Bridge.on('longPressStart', () => {
       startIAQuestion();
     });
 
-    // Soltar botón lateral
     R1Bridge.on('longPressEnd', () => {
       finishIAQuestion();
     });
 
-    // Interacción Táctil
     tarotCard.addEventListener('click', drawCard);
     if (closeLlmBtn) closeLlmBtn.addEventListener('click', () => {
       if (llmBox) llmBox.classList.add('hidden');
