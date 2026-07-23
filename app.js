@@ -1,22 +1,22 @@
 /**
  * app.js - Tarot Arcana Neón (Sí o No) para Rabbit R1
- * Ofrece tiradas de tarot estilo Pixel Neón 16-Bit con lectura en voz alta (Speech Synthesis),
- * voz nativa r1 (PluginMessageHandler), animaciones 3D y persistencia de racha.
+ * Ofrece tiradas de tarot estilo Pixel Neón 16-Bit con 6 tipos de cartas únicas,
+ * lectura en voz alta (Speech Synthesis), voz nativa r1, animaciones 3D y racha.
  */
 
 (function() {
   'use strict';
 
-  // Baraja de Cartas Tarot Arcana (Sí / No)
+  // Baraja Extendida de Cartas Tarot Arcana (Sí / No)
   const CARDS = [
-    { type: 'YES', name: 'EL SOL', image: 'card_yes.jpg', speech: '¡SÍ! El Sol ilumina tu camino.' },
-    { type: 'YES', name: 'EL DESTINO', image: 'card_yes.jpg', speech: '¡SÍ! El Destino está a tu favor.' },
-    { type: 'YES', name: 'LA FORTUNA', image: 'card_yes.jpg', speech: '¡SÍ! La Rueda de la Fortuna sonríe.' },
-    { type: 'YES', name: 'EL MAGO', image: 'card_yes.jpg', speech: '¡SÍ! Tienes todo el poder para lograrlo.' },
-    { type: 'NO', name: 'LA LUNA', image: 'card_no.jpg', speech: '¡NO! La Luna sugiere precaución y duda.' },
-    { type: 'NO', name: 'LA TORRE', image: 'card_no.jpg', speech: '¡NO! La Torre indica cambios inesperados.' },
-    { type: 'NO', name: 'LA SOMBRA', image: 'card_no.jpg', speech: '¡NO! Las sombras tapan la respuesta.' },
-    { type: 'NO', name: 'EL JUICIO', image: 'card_no.jpg', speech: '¡NO! El Juicio pide prudencia.' }
+    { type: 'YES', name: 'EL SOL', image: 'card_yes.jpg', speech: '¡SÍ! El Sol ilumina tu camino con éxito.' },
+    { type: 'YES', name: 'EL MAGO', image: 'card_mago.jpg', speech: '¡SÍ! El Mago manifiesta tu deseo con poder.' },
+    { type: 'YES', name: 'LA ESTRELLA', image: 'card_estrella.jpg', speech: '¡SÍ! La Estrella ilumina tu esperanza.' },
+    { type: 'YES', name: 'LA FORTUNA', image: 'card_yes.jpg', speech: '¡SÍ! La Rueda de la Fortuna sonríe a tu favor.' },
+    { type: 'NO', name: 'LA LUNA', image: 'card_no.jpg', speech: '¡NO! La Luna sugiere precaución y misterio.' },
+    { type: 'NO', name: 'LA TORRE', image: 'card_torre.jpg', speech: '¡NO! La Torre indica cambios repentinos.' },
+    { type: 'NO', name: 'EL JUICIO', image: 'card_juicio.jpg', speech: '¡NO! El Juicio pide analizar antes de actuar.' },
+    { type: 'NO', name: 'LA SOMBRA', image: 'card_no.jpg', speech: '¡NO! Las sombras ocultan la verdad por ahora.' }
   ];
 
   // Estado de la App
@@ -142,7 +142,6 @@
     function speakResult(card) {
       const textToSpeak = `El Tarot Arcana dice: ${card.type}. ${card.speech}`;
 
-      // 1. Web Speech Synthesis (Navegador / WebView)
       try {
         if ('speechSynthesis' in window) {
           window.speechSynthesis.cancel();
@@ -156,7 +155,6 @@
         console.warn('SpeechSynthesis no disponible:', e);
       }
 
-      // 2. Comunicar a Rabbit OS para altavoz nativo
       R1Bridge.postMessage({
         message: `[Tarot Arcana]: Tirada realizada. Resultado = ${card.type}. Carta = ${card.name}.`,
         useLLM: false,
@@ -170,8 +168,8 @@
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
-        osc.frequency.exponentialRampToValueAtTime(1046.50, ctx.currentTime + 0.3); // C6
+        osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1046.50, ctx.currentTime + 0.3);
         gain.gain.setValueAtTime(0.2, ctx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
         osc.connect(gain);

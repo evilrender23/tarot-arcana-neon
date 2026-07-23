@@ -1,6 +1,6 @@
 {
   "verified": true,
-  "input_payload": "{\"title\":\"Tarot Arcana Ne\\u00f3n\",\"url\":\"https://evilrender23.github.io/tarot-arcana-neon/\",\"description\":\"Tirada de Tarot S\\u00ed o No estilo Pixel Ne\\u00f3n con lectura en voz alta e IA para Rabbit R1\",\"iconUrl\":\"https://evilrender23.github.io/tarot-arcana-neon/icon.svg\",\"themeColor\":\"#FE5000\"}",
-  "decoded_payload": "{\"title\":\"Tarot Arcana Ne\\u00f3n\",\"url\":\"https://evilrender23.github.io/tarot-arcana-neon/\",\"description\":\"Tirada de Tarot S\\u00ed o No estilo Pixel Ne\\u00f3n con lectura en voz alta e IA para Rabbit R1\",\"iconUrl\":\"https://evilrender23.github.io/tarot-arcana-neon/icon.svg\",\"themeColor\":\"#FE5000\"}",
+  "input_payload": "{\"title\":\"Tarot Arcana Ne\\u00f3n\",\"url\":\"https://5d413e283de31c.lhr.life/\",\"description\":\"Tirada de Tarot S\\u00ed o No estilo Pixel Ne\\u00f3n con lectura en voz alta e IA para Rabbit R1\",\"iconUrl\":\"https://5d413e283de31c.lhr.life/icon.svg\",\"themeColor\":\"#FE5000\"}",
+  "decoded_payload": "{\"title\":\"Tarot Arcana Ne\\u00f3n\",\"url\":\"https://5d413e283de31c.lhr.life/\",\"description\":\"Tirada de Tarot S\\u00ed o No estilo Pixel Ne\\u00f3n con lectura en voz alta e IA para Rabbit R1\",\"iconUrl\":\"https://5d413e283de31c.lhr.life/icon.svg\",\"themeColor\":\"#FE5000\"}",
   "match_exact": true
 }
