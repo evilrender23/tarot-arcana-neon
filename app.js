@@ -1,7 +1,7 @@
 /**
  * app.js - Tarot Arcana Neón (Sí o No) para Rabbit R1
- * Baraja completa de los 22 Arcanos Mayores del Tarot en Pixel-Art 16-Bit.
- * Incluye lectura en voz alta (TTS), voz nativa r1, animaciones 3D y racha.
+ * Incluye animación de barajado del mazo, 22 Arcanos Mayores y consulta de IA
+ * persistente al mantener presionado el botón lateral de Rabbit R1.
  */
 
 (function() {
@@ -39,22 +39,25 @@
   let score = 0;
   let isFlipped = false;
   let isShuffling = false;
+  let isPressingIA = false;
   let currentCard = null;
+  let currentQuestion = 'Tirada General de Tarot Arcana';
 
   function initApp() {
     // Elementos DOM
     const scoreVal = document.getElementById('score-val');
     const ratioVal = document.getElementById('ratio-val');
+    const cardStage = document.getElementById('card-stage');
     const tarotCard = document.getElementById('tarot-card');
     const cardImg = document.getElementById('card-img');
     const resultBadge = document.getElementById('result-badge');
     const cardName = document.getElementById('card-name');
     const promptText = document.getElementById('prompt-text');
     const llmBox = document.getElementById('llm-box');
+    const llmQuestionText = document.getElementById('llm-question-text');
     const llmText = document.getElementById('llm-text');
     const closeLlmBtn = document.getElementById('close-llm');
 
-    // Render Inicial Inmediato
     updateStatsDisplay();
     loadState();
 
@@ -89,13 +92,34 @@
     }
 
     // -------------------------------------------------------------
+    // Animación de Barajar Mazo
+    // -------------------------------------------------------------
+    function triggerShuffleAnimation(callback, duration = 800) {
+      if (isShuffling) return;
+      isShuffling = true;
+
+      cardStage.classList.add('shuffling-active');
+      tarotCard.classList.add('shuffling');
+      playShuffleSound();
+
+      if (promptText) promptText.textContent = '🔮 Barajando los 22 Arcanos...';
+
+      setTimeout(() => {
+        cardStage.classList.remove('shuffling-active');
+        tarotCard.classList.remove('shuffling');
+        isShuffling = false;
+        if (callback) callback();
+      }, duration);
+    }
+
+    // -------------------------------------------------------------
     // Tirada de Carta (Sí o No de los 22 Arcanos)
     // -------------------------------------------------------------
     function drawCard() {
       if (isShuffling) return;
 
       if (isFlipped) {
-        // Volver a cubrir la carta
+        // Cubrir carta
         isFlipped = false;
         tarotCard.classList.remove('face-up');
         tarotCard.classList.add('face-down');
@@ -103,21 +127,11 @@
         return;
       }
 
-      // Animación de Barajar
-      isShuffling = true;
-      tarotCard.classList.add('shuffling');
-      if (promptText) promptText.textContent = '🔮 Mezclando los 22 Arcanos Mayores...';
-      playChimeSound();
-
-      setTimeout(() => {
-        tarotCard.classList.remove('shuffling');
-        isShuffling = false;
-
-        // Seleccionar carta aleatoria entre los 22 Arcanos
+      // Ejecutar animación de barajado antes de revelar
+      triggerShuffleAnimation(() => {
         const randomIndex = Math.floor(Math.random() * CARDS.length);
         currentCard = CARDS[randomIndex];
 
-        // Actualizar visuales de la carta
         if (cardImg) cardImg.src = currentCard.image;
         if (cardName) cardName.textContent = currentCard.name;
 
@@ -126,12 +140,11 @@
           resultBadge.className = `result-badge ${currentCard.type.toLowerCase()}`;
         }
 
-        // Voltear carta
+        // Revelar carta
         isFlipped = true;
         tarotCard.classList.remove('face-down');
         tarotCard.classList.add('face-up');
 
-        // Actualizar Estadísticas
         if (currentCard.type === 'YES') {
           yesCount++;
           score += 100;
@@ -144,14 +157,12 @@
 
         if (promptText) promptText.textContent = `Resultado: ${currentCard.type} (${currentCard.name})`;
 
-        // LECTURA EN VOZ ALTA (Web Speech Synthesis & r1 Speaker)
         speakResult(currentCard);
-
-      }, 600);
+      }, 700);
     }
 
     // -------------------------------------------------------------
-    // Lectura en Voz Alta (TTS & r1 Audio)
+    // Lectura en Voz Alta (TTS & r1 Speaker)
     // -------------------------------------------------------------
     function speakResult(card) {
       const textToSpeak = `El Tarot Arcana dice: ${card.type}. ${card.name}. ${card.speech}`;
@@ -176,37 +187,56 @@
       });
     }
 
-    function playChimeSound() {
+    function playShuffleSound() {
       try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(523.25, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(1046.50, ctx.currentTime + 0.3);
-        gain.gain.setValueAtTime(0.2, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.3);
+        for (let i = 0; i < 4; i++) {
+          setTimeout(() => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(300 + Math.random() * 400, ctx.currentTime);
+            gain.gain.setValueAtTime(0.15, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.08);
+          }, i * 70);
+        }
       } catch (e) {}
     }
 
     // -------------------------------------------------------------
-    // Interpretación Profunda con IA (Rabbit OS LLM)
+    // Consulta IA Persistente (Rabbit OS LLM)
     // -------------------------------------------------------------
-    function requestDeepOracle() {
-      if (promptText) promptText.textContent = '🔮 Oráculo Arcana r1 interpretando...';
-      const cardContext = currentCard ? `${currentCard.name} (${currentCard.type})` : 'Baraja de 22 Arcanos';
+    function startIAQuestion() {
+      isPressingIA = true;
+      const cardContext = currentCard ? `${currentCard.name} (${currentCard.type})` : 'Mazo de Arcanos';
+      currentQuestion = `¿Qué significa la carta ${cardContext} para mí?`;
 
+      if (promptText) promptText.textContent = '🎙️ Escuchando pregunta... (Mantén pulsado)';
+      if (llmQuestionText) llmQuestionText.textContent = currentQuestion;
+      if (llmText) llmText.textContent = 'Escuchando tu voz... Suelta el botón para enviar la consulta.';
+      if (llmBox) llmBox.classList.remove('hidden');
+    }
+
+    function finishIAQuestion() {
+      if (!isPressingIA) return;
+      isPressingIA = false;
+
+      if (promptText) promptText.textContent = '🔮 Enviando consulta al Oráculo IA...';
+      if (llmText) llmText.textContent = '🔮 Oráculo Arcana interpretando tu tirada...';
+
+      // Comunicar con Rabbit OS activando LLM y voz
       R1Bridge.postMessage({
-        message: `[Tarot Arcana]: Dame una breve y mística interpretación del Arcano Mayor ${cardContext} respondiendo a una duda de Sí o No en tono místico.`,
+        message: `[Tarot Arcana]: ${currentQuestion}. Por favor responde brevemente como un sabio oráculo de tarot.`,
         useLLM: true,
         wantsR1Response: true
       });
     }
 
+    // Manejar respuesta del LLM manteniendo la pregunta visible
     R1Bridge.onMessage((data) => {
       let reply = '';
       if (data && data.data) {
@@ -220,8 +250,13 @@
         reply = data.message;
       }
 
-      if (reply && llmText && llmBox) {
+      if (!reply) {
+        reply = `El Arcano ${currentCard ? currentCard.name : 'elegido'} te aconseja mantener la fe y seguir tu instinto.`;
+      }
+
+      if (llmText && llmBox) {
         llmText.textContent = reply;
+        if (llmQuestionText) llmQuestionText.textContent = currentQuestion;
         llmBox.classList.remove('hidden');
         if (promptText) promptText.textContent = 'Oráculo Arcana ha respondido.';
       }
@@ -233,25 +268,30 @@
     R1Bridge.on('scrollUp', () => {
       score += 10;
       updateStatsDisplay();
-      playChimeSound();
-      if (promptText) promptText.textContent = 'Barajando los 22 Arcanos...';
+      triggerShuffleAnimation();
     });
 
     R1Bridge.on('scrollDown', () => {
       score += 10;
       updateStatsDisplay();
-      playChimeSound();
-      if (promptText) promptText.textContent = 'Barajando los 22 Arcanos...';
+      triggerShuffleAnimation();
     });
 
     R1Bridge.on('sideClick', () => {
       drawCard();
     });
 
+    // Presionar y mantener botón lateral
     R1Bridge.on('longPressStart', () => {
-      requestDeepOracle();
+      startIAQuestion();
     });
 
+    // Soltar botón lateral
+    R1Bridge.on('longPressEnd', () => {
+      finishIAQuestion();
+    });
+
+    // Interacción Táctil
     tarotCard.addEventListener('click', drawCard);
     if (closeLlmBtn) closeLlmBtn.addEventListener('click', () => {
       if (llmBox) llmBox.classList.add('hidden');

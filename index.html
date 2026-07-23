@@ -17,7 +17,7 @@
       <span class="badge mult-badge">NEÓN x3</span>
     </header>
 
-    <!-- Main Card Area -->
+    <!-- Main Content Area -->
     <main class="content">
       <!-- Stats Bar -->
       <div class="stats-bar">
@@ -31,8 +31,12 @@
         </div>
       </div>
 
-      <!-- Tarot Card Stage -->
+      <!-- Deck & Tarot Card Stage -->
       <div id="card-stage" class="card-stage">
+        <!-- Deck Shadows for Shuffling Visual -->
+        <div class="deck-shadow deck-left"></div>
+        <div class="deck-shadow deck-right"></div>
+
         <div id="tarot-card" class="tarot-card face-down">
           <!-- Card Back -->
           <div class="card-face card-back">
@@ -54,24 +58,27 @@
         </div>
       </div>
 
-      <!-- Prompt & Speech Box -->
+      <!-- Action Prompt & Status Box -->
       <div class="prompt-box">
         <span id="prompt-text" class="prompt-text">Pulsa PTT o Clic para Tirar</span>
       </div>
 
-      <!-- LLM Interpretation Box -->
+      <!-- Persistent LLM Interpretation Modal -->
       <div id="llm-box" class="llm-box hidden">
         <div class="llm-header">
-          <span>🔮 Oráculo Arcana r1</span>
+          <span id="llm-title">🔮 Oráculo Arcana IA</span>
           <button id="close-llm" class="close-btn">×</button>
         </div>
-        <p id="llm-text"></p>
+        <div class="llm-question-bar">
+          <small>Consulta:</small> <span id="llm-question-text">Carta actual</span>
+        </div>
+        <p id="llm-text">Cargando interpretación del Oráculo...</p>
       </div>
     </main>
 
     <!-- Footer Navigation Hint -->
     <footer class="footer">
-      <span class="hint">▲▼ Rueda: Barajar • PTT: Tirar / IA</span>
+      <span class="hint">▲▼ Rueda: Barajar • PTT Largo: Preguntar IA</span>
     </footer>
   </div>
 
